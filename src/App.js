@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import TransactionTable from './components/TransactionTable';
 import TransactionForm from './components/TransactionForm';
 import SearchBar from './components/SearchBar';
-
 
 const App = () => {
   const [transactions, setTransactions] = useState([]);
@@ -12,10 +10,10 @@ const App = () => {
 
   // Fetch transactions data from the server
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/transactions')
-      .then((response) => {
-        setTransactions(response.data);
+    fetch('http://localhost:3001/transactions')
+      .then((response) => response.json())
+      .then((data) => {
+        setTransactions(data);
         setLoading(false);
       })
       .catch((error) => {
@@ -24,22 +22,21 @@ const App = () => {
       });
   }, []);
 
-    // Function to handle sorting transactions
-    const handleSort = (sortType) => {
-      setSortType(sortType);
-    };
-  
-   // Sort transactions based on sortType
-   useEffect(() => {
+  // Function to handle sorting transactions
+  const handleSort = (sortType) => {
+    setSortType(sortType);
+  };
+
+  // Function to sort transactions based on sortType
+  const getSortedTransactions = (sortType) => {
     let sortedTransactions = [...transactions];
     if (sortType === 'category') {
       sortedTransactions.sort((a, b) => a.category.localeCompare(b.category));
     } else if (sortType === 'description') {
       sortedTransactions.sort((a, b) => a.description.localeCompare(b.description));
     }
-    setTransactions(sortedTransactions);
-  }, [transactions, sortType]);
-
+    return sortedTransactions;
+  };
 
   return (
     <div>
@@ -49,13 +46,12 @@ const App = () => {
       ) : (
         <>
           <SearchBar onSort={handleSort} />
-          <TransactionTable transactions={transactions} />
+          <TransactionTable transactions={getSortedTransactions(sortType)} />
           <TransactionForm setTransactions={setTransactions} />
         </>
       )}
     </div>
   );
 };
-
 
 export default App;
